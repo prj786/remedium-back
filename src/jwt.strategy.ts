@@ -9,11 +9,11 @@ import * as process from 'process';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @InjectModel('Auth') private readonly userModel: Model<UserModel>,
+    @InjectModel('Users') private readonly userModel: Model<UserModel>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: 'someRandomPhraseWithSymbolsAndChars',
+      secretOrKey: process.env.JWT_SECRET_KEY,
     });
   }
 

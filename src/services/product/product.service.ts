@@ -15,6 +15,16 @@ export class ProductService {
     return await newProduct.save();
   }
 
+  async editProduct(product: ProductModel, productId: string): Promise<any> {
+    return this.productModel
+      .findByIdAndUpdate(productId, product)
+      .setOptions({ overwrite: true });
+  }
+
+  async deleteProduct(productId: string): Promise<any> {
+    return this.productModel.findByIdAndDelete(productId);
+  }
+
   async getProducts(count: string): Promise<PayloadModel<ProductModel[]>> {
     const products = (await this.productModel
       .find()
