@@ -3,7 +3,14 @@ export interface UserModel {
   password: string;
   firstName?: string;
   lastName?: string;
-  saleDate: Date;
+  saleIncome: number;
+  registerDate: Date;
+}
+
+export interface UserListModel {
+  username: string;
+  firstName?: string;
+  lastName?: string;
   saleIncome: number;
   registerDate: Date;
 }

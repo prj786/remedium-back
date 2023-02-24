@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserModel } from '../../models/user.model';
+import { UserListModel, UserModel } from '../../models/user.model';
 
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -18,10 +18,17 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    if (!hashedPassword) {
+      throw new UnauthorizedException('Password did not hashed');
+    }
+
     const user = await this.userModel.create({
       username,
       password: hashedPassword,
-      ...userDto,
+      firstName: userDto.firstName,
+      lastName: userDto.lastName,
+      registerDate: new Date(),
+      saleIncome: 0,
     });
 
     const token = this.jwtService.sign({ id: user._id });
@@ -30,7 +37,6 @@ export class AuthService {
   }
 
   async signIn(userForm: UserModel): Promise<{ token: string }> {
-    console.log(userForm);
     const { username, password } = userForm;
 
     const user = await this.userModel.findOne({ username });
@@ -50,13 +56,24 @@ export class AuthService {
     return { token };
   }
 
-  async getList(count: string): Promise<PayloadModel<UserModel[]>> {
+  async getList(count: string): Promise<PayloadModel<UserListModel[]>> {
     const users = (await this.userModel
       .find()
       .limit(parseInt(count, 10))
-      .exec()) as UserModel[];
+      .exec()) as UserListModel[];
     const size = await this.userModel.countDocuments({});
 
-    return { items: users, size: size } as PayloadModel<UserModel[]>;
+    return {
+      items: users.map((user) => {
+        return {
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          registerDate: user.registerDate[0],
+          saleIncome: user.saleIncome,
+        };
+      }),
+      size: size,
+    } as PayloadModel<UserListModel[]>;
   }
 }

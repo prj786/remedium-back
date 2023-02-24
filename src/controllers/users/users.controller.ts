@@ -38,7 +38,7 @@ export class UsersController {
     try {
       return this.authService.createUser(user);
     } catch (err) {
-      // this.errorService.returnResp(err);
+      this.errorService.returnResp(err);
     }
   }
 
