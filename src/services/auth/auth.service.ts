@@ -36,7 +36,9 @@ export class AuthService {
     return { token };
   }
 
-  async signIn(userForm: UserModel): Promise<{ token: string }> {
+  async signIn(
+    userForm: UserModel,
+  ): Promise<{ token: string; user: UserModel }> {
     const { username, password } = userForm;
 
     const user = await this.userModel.findOne({ username });
@@ -53,7 +55,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({ id: user._id });
 
-    return { token };
+    return { token, user };
   }
 
   async getList(count: string): Promise<PayloadModel<UserListModel[]>> {

@@ -6,11 +6,10 @@ import {
 import { AuthService } from '../../services/auth/auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ErrorService } from '../../services/error/error.service';
 import { JwtStrategy } from '../../jwt.strategy';
-import * as process from 'process';
 
 @Module({
   imports: [
