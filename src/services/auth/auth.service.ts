@@ -13,7 +13,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async createUser(userDto: UserModel): Promise<{ token: string }> {
+  async createUser(userDto: UserModel): Promise<{ user: UserModel }> {
     const { username, password } = userDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,9 +31,17 @@ export class AuthService {
       saleIncome: 0,
     });
 
-    const token = this.jwtService.sign({ id: user._id });
+    const savedUser = {
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      registerDate: new Date(),
+      saleIncome: 0,
+    };
 
-    return { token };
+    this.jwtService.sign({ id: user._id });
+
+    return { user: savedUser };
   }
 
   async signIn(
