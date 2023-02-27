@@ -63,7 +63,15 @@ export class AuthService {
 
     const token = this.jwtService.sign({ id: user._id });
 
-    return { token, user };
+    const savedUser = {
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      registerDate: new Date(),
+      saleIncome: 0,
+    };
+
+    return { token, user: savedUser };
   }
 
   async getList(count: string): Promise<PayloadModel<UserListModel[]>> {
