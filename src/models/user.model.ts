@@ -8,6 +8,7 @@ export interface UserModel {
 }
 
 export interface UserListModel {
+  _id?: string;
   username: string;
   firstName?: string;
   lastName?: string;

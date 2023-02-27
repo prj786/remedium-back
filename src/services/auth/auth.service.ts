@@ -32,6 +32,7 @@ export class AuthService {
     });
 
     const savedUser = {
+      id: user._id,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -64,6 +65,7 @@ export class AuthService {
     const token = this.jwtService.sign({ id: user._id });
 
     const savedUser = {
+      id: user._id,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -78,12 +80,13 @@ export class AuthService {
     const users = (await this.userModel
       .find()
       .limit(parseInt(count, 10))
-      .exec()) as UserListModel[];
+      .exec()) as unknown as UserListModel[];
     const size = await this.userModel.countDocuments({});
 
     return {
       items: users.map((user) => {
         return {
+          id: user._id,
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
