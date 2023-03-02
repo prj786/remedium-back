@@ -30,6 +30,7 @@ export const ProductsSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Product name is required'],
     unique: [true, 'Product is already added'],
+    regex: [/^[a-zA-Z]+$|^[ა-ჰ]+/],
   },
   price: { type: String, required: [true, 'Product price is required'] },
   quantity: {
