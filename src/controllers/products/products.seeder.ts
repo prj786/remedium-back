@@ -1,7 +1,23 @@
-import { DataFactory, Seeder } from 'nestjs-seeder';
-import { InjectModel } from '@nestjs/mongoose';
+import { DataFactory, Factory, Seeder } from 'nestjs-seeder';
+import { InjectModel, Prop, Schema } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { Model } from 'mongoose';
 import { ProductModel } from '../../models/product.model';
+
+@Schema()
+class Product extends Document {
+  @Factory((faker) => faker.word.noun())
+  @Prop()
+  productName: string;
+
+  @Factory(() => Math.floor(Math.random() * 100))
+  @Prop()
+  quantity: number;
+
+  @Factory(() => Math.floor(Math.random() * 100))
+  @Prop()
+  price: number;
+}
 
 export class ProductSeeder implements Seeder {
   constructor(
@@ -13,9 +29,7 @@ export class ProductSeeder implements Seeder {
   }
 
   seed(): Promise<any> {
-    const products = DataFactory.createForClass(this.productModel).generate(
-      100,
-    );
+    const products = DataFactory.createForClass(Product).generate(100);
 
     return this.productModel.insertMany(products);
   }

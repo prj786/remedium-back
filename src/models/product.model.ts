@@ -3,5 +3,4 @@ export interface ProductModel {
   productName: string;
   price: string;
   quantity: number;
-  saleDate: Date;
 }

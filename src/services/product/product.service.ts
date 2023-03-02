@@ -48,7 +48,7 @@ export class ProductService {
   }
 
   async getProducts(
-    count: string,
+    params: { limit: number; page: number },
     searchDto: ProductsSearch,
   ): Promise<PayloadModel<ProductModel[]>> {
     const query = {};
@@ -59,10 +59,11 @@ export class ProductService {
 
     const products = (await this.productModel
       .find(query)
-      .limit(parseInt(count, 10))
+      .skip((params.page - 1) * params.limit)
+      .limit(params.limit)
       .exec()) as ProductModel[];
 
-    const size = await this.productModel.countDocuments(products);
+    const size = await this.productModel.countDocuments(query).exec();
 
     return { items: products, size: size } as PayloadModel<ProductModel[]>;
   }

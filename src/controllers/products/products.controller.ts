@@ -34,9 +34,8 @@ export const ProductsSchema = new mongoose.Schema({
   price: { type: String, required: [true, 'Product price is required'] },
   quantity: {
     type: Number,
-    required: [true, 'Product quantity can not be less than 1 is required'],
+    required: [true, 'Product quantity can not be less than 1 and is required'],
   },
-  saleDate: Date,
 });
 @Controller('api/products')
 export class ProductsController {
@@ -95,13 +94,13 @@ export class ProductsController {
     }
   }
 
-  @Get(':count')
+  @Get(':limit/:page')
   async getProducts(
-    @Param() param,
+    @Param() param: { limit: number; page: number },
     @Query() query: ProductsSearch,
   ): Promise<PayloadModel<ProductModel[]>> {
     try {
-      return this.productService.getProducts(param.count, query);
+      return this.productService.getProducts(param, query);
     } catch (err) {
       this.errorService.returnResp(
         err,

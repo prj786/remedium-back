@@ -93,7 +93,7 @@ export class UsersController {
 
   @Put('/update')
   @UseGuards(AuthGuard('jwt'))
-  async editProduct(@Body() user: UserModel) {
+  async updateUser(@Body() user: UserModel) {
     try {
       return await this.authService.updateUser(user);
     } catch (err) {

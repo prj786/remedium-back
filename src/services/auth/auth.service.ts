@@ -136,12 +136,6 @@ export class AuthService {
       query['saleIncome'] = { $lte: searchDto.totalSaleTo };
     }
 
-    console.log(
-      (pagination.page - 1) * pagination.limit,
-      pagination.page,
-      pagination.limit,
-    );
-
     const users = (await this.userModel
       .find(query)
       .skip((pagination.page - 1) * pagination.limit)
