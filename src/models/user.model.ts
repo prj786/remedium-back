@@ -1,4 +1,5 @@
 export interface UserModel {
+  _id?: any;
   username: string;
   password?: string;
   firstName?: string;

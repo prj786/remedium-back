@@ -6,6 +6,7 @@ import { UserListModel, UserModel } from '../../models/user.model';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { PayloadModel } from '../../models/payload.model';
+import { UserSearch } from '../../controllers/users/users.controller';
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,7 +14,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async createUser(userDto: UserModel): Promise<{ user: UserModel }> {
+  async createUser(userDto: UserModel): Promise<UserModel> {
     const { username, password } = userDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,7 +33,7 @@ export class AuthService {
     });
 
     const savedUser = {
-      id: user._id,
+      _id: user._id,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -42,7 +43,25 @@ export class AuthService {
 
     this.jwtService.sign({ id: user._id });
 
-    return { user: savedUser };
+    return savedUser;
+  }
+
+  async updateUser(userDto: UserModel): Promise<any> {
+    const hashedPassword = await bcrypt.hash(userDto.password, 10);
+
+    return this.userModel
+      .findByIdAndUpdate(userDto._id, { ...userDto, password: hashedPassword })
+      .setOptions({ overwrite: true });
+  }
+
+  async updateSaleIncome(userId: string, saleIncome: number): Promise<any> {
+    return this.userModel
+      .findByIdAndUpdate(userId, { ['saleIncome']: saleIncome }, { new: true })
+      .setOptions({ overwrite: false });
+  }
+
+  async deleteUser(userId: string): Promise<any> {
+    return this.userModel.findByIdAndDelete(userId);
   }
 
   async signIn(
@@ -65,28 +84,76 @@ export class AuthService {
     const token = this.jwtService.sign({ id: user._id });
 
     const savedUser = {
-      id: user._id,
+      _id: user._id,
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
       registerDate: new Date(),
-      saleIncome: 0,
+      saleIncome: user.saleIncome,
     };
 
     return { token, user: savedUser };
   }
 
-  async getList(count: string): Promise<PayloadModel<UserListModel[]>> {
+  async getList(
+    pagination: { limit: number; page: number } = { limit: 10, page: 1 },
+    searchDto: UserSearch,
+  ): Promise<PayloadModel<UserListModel[]>> {
+    let query = {};
+
+    if (searchDto.search) {
+      query = {
+        $or: [
+          { username: { $regex: searchDto.search, $options: 'i' } },
+          { firstName: { $regex: searchDto.search, $options: 'i' } },
+          { lastName: { $regex: searchDto.search, $options: 'i' } },
+        ],
+      };
+    }
+    if (searchDto.registerDateFrom && searchDto.registerDateFrom) {
+      query['registerDate'] = {
+        $gte: searchDto.registerDateFrom,
+        $lte: searchDto.registerDateTo,
+      };
+    } else if (searchDto.registerDateFrom) {
+      query['registerDate'] = {
+        $gte: searchDto.registerDateFrom,
+      };
+    } else if (searchDto.registerDateTo) {
+      query['registerDate'] = {
+        $lte: searchDto.registerDateTo,
+      };
+    }
+
+    if (searchDto.totalSaleFrom && searchDto.totalSaleTo) {
+      query['saleIncome'] = {
+        $gte: searchDto.totalSaleFrom,
+        $lte: searchDto.totalSaleTo,
+      };
+    } else if (searchDto.totalSaleFrom) {
+      query['saleIncome'] = { $gte: searchDto.totalSaleFrom };
+    } else if (searchDto.totalSaleTo) {
+      query['saleIncome'] = { $lte: searchDto.totalSaleTo };
+    }
+
+    console.log(
+      (pagination.page - 1) * pagination.limit,
+      pagination.page,
+      pagination.limit,
+    );
+
     const users = (await this.userModel
-      .find()
-      .limit(parseInt(count, 10))
+      .find(query)
+      .skip((pagination.page - 1) * pagination.limit)
+      .limit(pagination.limit)
       .exec()) as unknown as UserListModel[];
-    const size = await this.userModel.countDocuments({});
+
+    const size = await this.userModel.countDocuments(query).exec();
 
     return {
       items: users.map((user) => {
         return {
-          id: user._id,
+          _id: user._id,
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,

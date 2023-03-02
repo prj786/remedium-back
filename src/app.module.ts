@@ -17,7 +17,6 @@ import { AuthModule } from './modules/auth/auth.module';
       },
     ),
     BaseModule,
-    AuthModule,
   ],
   controllers: [AppController],
 })

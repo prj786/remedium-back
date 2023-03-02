@@ -7,6 +7,8 @@ import {
   Get,
   Param,
   Post,
+  Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from '../../services/product/product.service';
@@ -14,6 +16,14 @@ import { ProductModel } from '../../models/product.model';
 import { ErrorService } from '../../services/error/error.service';
 import { PayloadModel } from '../../models/payload.model';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from '../../services/auth/auth.service';
+import { IsOptional, IsString } from 'class-validator';
+
+export class ProductsSearch {
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
 
 export const ProductsSchema = new mongoose.Schema({
   productName: {
@@ -32,6 +42,7 @@ export const ProductsSchema = new mongoose.Schema({
 export class ProductsController {
   constructor(
     private productService: ProductService,
+    private authService: AuthService,
     private errorService: ErrorService,
   ) {}
 
@@ -39,26 +50,58 @@ export class ProductsController {
   @UseGuards(AuthGuard('jwt'))
   async addProduct(@Body() product: ProductModel) {
     try {
-      await this.productService.addProduct(product);
+      return await this.productService.addProduct(product);
     } catch (err) {
       this.errorService.returnResp(err);
     }
   }
 
-  @Post('/update/:id')
+  @Put('/update/:productId')
   @UseGuards(AuthGuard('jwt'))
   async editProduct(@Body() product: ProductModel, @Param() param) {
     try {
-      await this.productService.editProduct(product, param.id);
+      await this.productService.editProduct(product, param.productId);
+    } catch (err) {
+      this.errorService.returnResp(err);
+    }
+  }
+
+  @Put('/sell/:productId')
+  @UseGuards(AuthGuard('jwt'))
+  async sellProduct(
+    @Body()
+    payload: {
+      product: ProductModel;
+      count: number;
+      userId: string;
+      newIncome: number;
+    },
+    @Param() param,
+  ) {
+    try {
+      const updatedProduct = await this.productService.sellProduct(
+        payload,
+        param.productId,
+      );
+
+      if (updatedProduct) {
+        return this.authService.updateSaleIncome(
+          payload.userId,
+          payload.newIncome,
+        );
+      }
     } catch (err) {
       this.errorService.returnResp(err);
     }
   }
 
   @Get(':count')
-  async getProducts(@Param() param): Promise<PayloadModel<ProductModel[]>> {
+  async getProducts(
+    @Param() param,
+    @Query() query: ProductsSearch,
+  ): Promise<PayloadModel<ProductModel[]>> {
     try {
-      return this.productService.getProducts(param.count);
+      return this.productService.getProducts(param.count, query);
     } catch (err) {
       this.errorService.returnResp(
         err,
