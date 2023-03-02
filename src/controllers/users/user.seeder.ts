@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 
 @Schema()
 class User extends Document {
-  @Factory((faker) => faker.word.noun() + Math.floor(Math.random() * 2))
+  @Factory(() => 'manager-' + Math.floor(Math.random() * 10000))
   @Prop()
   username: string;
 
@@ -22,7 +22,7 @@ class User extends Document {
   @Prop()
   quantity: number;
 
-  @Factory(() => 'password1234')
+  @Factory(() => bcrypt.hashSync('password1234', 10))
   @Prop()
   password: string;
 
@@ -41,23 +41,24 @@ export class UserSeeder implements Seeder {
   ) {}
 
   drop(): Promise<any> {
-    return this.userModel.deleteMany({}).then(() => {
-      return bcrypt.hash('password1234', 10).then((res) => {
-        return this.userModel.create({
-          username: 'admin',
-          firstName: 'manager',
-          lastName: 'admin',
-          password: res,
-          registerDate: new Date(),
-          saleIncome: 0,
-        }) as any;
-      });
-    });
+    return this.userModel.deleteMany({}) as any;
+    // .then(() => {
+    //   return bcrypt.hash('password1234', 10).then((res) => {
+    //     return this.userModel.create({
+    //       username: 'admin',
+    //       firstName: 'manager',
+    //       lastName: 'admin',
+    //       password: res,
+    //       registerDate: new Date(),
+    //       saleIncome: 0,
+    //     });
+    //   });
+    // })
+    // .catch(console.log);
   }
 
   seed(): Promise<any> {
     const users = DataFactory.createForClass(User).generate(10);
-
     return this.userModel.insertMany(users);
   }
 }

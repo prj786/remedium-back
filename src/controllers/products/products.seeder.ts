@@ -6,7 +6,7 @@ import { ProductModel } from '../../models/product.model';
 
 @Schema()
 class Product extends Document {
-  @Factory((faker) => faker.word.noun())
+  @Factory((faker) => faker.word.noun() + Math.floor(Math.random() * 10000))
   @Prop()
   productName: string;
 
@@ -25,12 +25,12 @@ export class ProductSeeder implements Seeder {
   ) {}
 
   drop(): Promise<any> {
+    console.log('products');
     return this.productModel.deleteMany({}) as any;
   }
 
   seed(): Promise<any> {
     const products = DataFactory.createForClass(Product).generate(100);
-
     return this.productModel.insertMany(products);
   }
 }
