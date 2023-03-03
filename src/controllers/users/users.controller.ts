@@ -83,7 +83,6 @@ export class UsersController {
   }
 
   @Get('/list/:limit/:page')
-  @UseGuards(AuthGuard('jwt'))
   getData(@Param() param, @Query() search: UserSearch) {
     try {
       return this.authService.getList(param, search);
